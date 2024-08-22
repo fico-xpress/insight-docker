@@ -1,0 +1,92 @@
+services:
+    server:
+        # Wait until the database is ready for connections and admin user and insight exist.
+        depends_on:
+            db:
+                condition: service_healthy
+        platform: linux/amd64
+        build:
+            dockerfile: ../server.Dockerfile
+            no_cache: true
+            args:
+              IMAGE_SERVER: ${IMAGE_SERVER}${INSIGHT_VERSION:+:${INSIGHT_VERSION}}
+        ports:
+            # SERVER_EXTERNAL_PORT is defined in the .env file (default 8080)
+            - "${SERVER_EXTERNAL_PORT}:8080"
+            # SERVER_EXTERNAL_PYTHON_DEBUG_PORT is defined in the .env file (default 8090)
+            - "${SERVER_EXTERNAL_PYTHON_DEBUG_PORT}:${SERVER_EXTERNAL_PYTHON_DEBUG_PORT}"
+        environment:
+            - SERVER_EXTERNAL_PORT=${SERVER_EXTERNAL_PORT}
+            - SERVER_EXTERNAL_PYTHON_DEBUG_PORT=${SERVER_EXTERNAL_PYTHON_DEBUG_PORT}
+        volumes:
+            # server-config mounted onto server/config in the container
+            - ./server-config:/server/config
+            # When it starts, the server generates a public certificate visible to the worker
+            - public-certificates:/server/public-certificates
+            # Where to store the server logs. Uncomment the line below if needing to save the logs to files
+            #- ./logs:/server/logs
+        secrets:
+            - db_password
+        healthcheck:
+            test: curl http://server:8080/insightservices/rest/ready || exit 1
+    worker:
+        depends_on:
+            server:
+                condition: service_healthy
+        platform: linux/amd64
+        build:
+            dockerfile: ./worker-conda.Dockerfile
+            no_cache: true
+            args:
+              IMAGE_WORKER: ${IMAGE_WORKER}${INSIGHT_VERSION:+:${INSIGHT_VERSION}}
+        volumes:
+            # worker-config mounted onto worker/config in the container
+            - ./worker-config:/worker/config
+            # Add the server's public certificate
+            - public-certificates:/worker/public-certificates
+            # Where to store the worker logs. Uncomment the line below if needing to save the logs to files
+            #- ./logs:/worker/logs
+            - ./environments:/worker/environments
+            # To license Xpress, put the license in the /license directory and uncomment the line below
+            #- ./license/xpauth.xpr:/opt/xpressmp/bin/xpauth.xpr
+        environment:
+            MINICONDA_ENV: ${MINICONDA_ENV}
+        healthcheck:
+            test: curl http://worker:8080/rest/alive || exit 1
+    db:
+        # Versions are specified in the .env file
+        image: mysql:${VERSION_MYSQL}
+        command: 
+            # mysql default authentication is caching_sha256_password, but the mariadb client doesn't like that.
+            - --authentication_policy=mysql_native_password
+            # mysql logs a warning on every connection that mysql_native_password is deprecated, though. Suppress that.
+            - --log-error-verbosity=1
+        volumes:
+            - db_data:/var/lib/mysql
+        environment:
+            MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+            MYSQL_USER: insight
+            MYSQL_PASSWORD_FILE: /run/secrets/db_password
+            MYSQL_DATABASE: insight
+        secrets:
+            - db_root_password
+            - db_password
+        healthcheck:
+            test: "/usr/bin/mysql 
+                    --user=insight 
+                    --password=$$(cat /run/secrets/db_password) 
+                    --execute \"USE insight;\""
+            interval: 5s
+            start_period: 15s
+            retries: 20
+
+secrets:
+    db_root_password:
+        file: db_root_password.txt
+    db_password:
+        file: db_password.txt
+     
+volumes:
+    db_data:
+    public-certificates:
+    
