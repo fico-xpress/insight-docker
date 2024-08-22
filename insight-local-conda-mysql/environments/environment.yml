@@ -1,0 +1,11 @@
+name: example-environment
+channels:
+  - fico-xpress
+  - conda-forge
+  # Add intel channel
+  - https://software.repos.intel.com/python/conda/
+dependencies:
+  - python~=3.12
+  - xpressinsight~=1.10.0
+  - xpress~=9.4.1
+  - debugpy~=1.8

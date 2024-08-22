@@ -1,0 +1,55 @@
+services:
+    server:
+        build:
+            dockerfile: ../server.Dockerfile
+            no_cache: true
+            args:
+              IMAGE_SERVER: ${IMAGE_SERVER}${INSIGHT_VERSION:+:${INSIGHT_VERSION}}
+        platform: linux/amd64
+        ports:
+            # SERVER_EXTERNAL_PORT is defined in the .env file (default 8080)
+            - "${SERVER_EXTERNAL_PORT}:8080"
+            # SERVER_EXTERNAL_PYTHON_DEBUG_PORT is defined in the .env file (default 8090)
+            - "${SERVER_EXTERNAL_PYTHON_DEBUG_PORT}:${SERVER_EXTERNAL_PYTHON_DEBUG_PORT}"
+        environment:
+            - SERVER_EXTERNAL_PORT=${SERVER_EXTERNAL_PORT}
+            - SERVER_EXTERNAL_PYTHON_DEBUG_PORT=${SERVER_EXTERNAL_PYTHON_DEBUG_PORT}
+        volumes:
+            # server-config mounted onto server/config in the container
+            - ./server-config:/server/config
+            # You can see the repo and silo are in the volume 'insight-local-conda-filesystem_data'
+            - data:/data
+            # When it starts, the server generates a public certificate visible to the worker
+            - public-certificates:/server/public-certificates
+            # Where to store the server logs. Uncomment the line below if needing to save the logs to files
+            #- ./logs:/server/logs
+        healthcheck:
+            test: curl http://server:8080/insightservices/rest/ready || exit 1
+    worker:
+        depends_on:
+            server:
+                condition: service_healthy
+        platform: linux/amd64
+        build:
+            dockerfile: ./worker-conda.Dockerfile
+            no_cache: true
+            args:
+              IMAGE_WORKER: ${IMAGE_WORKER}${INSIGHT_VERSION:+:${INSIGHT_VERSION}}
+        volumes:
+            # worker-config mounted onto worker/config in the container
+            - ./worker-config:/worker/config
+            # Add the server's public certificate
+            - public-certificates:/worker/public-certificates
+            # Where to store the worker logs. Uncomment the line below if needing to save the logs to files
+            #- ./logs:/worker/logs
+            - ./environments:/worker/environments
+            # To license Xpress, put the license in the /license directory and uncomment the line below
+            #- ./license/xpauth.xpr:/opt/xpressmp/bin/xpauth.xpr
+        environment:
+            MINICONDA_ENV: ${MINICONDA_ENV}
+        healthcheck:
+            test: curl http://worker:8080/rest/alive || exit 1
+
+volumes:
+    data:
+    public-certificates:
