@@ -47,8 +47,6 @@ services:
             # Where to store the worker logs. Uncomment the line below if needing to save the logs to files
             #- ./logs:/worker/logs
             - ./environments:/worker/environments
-            # To license Xpress, put the license in the /license directory and uncomment the line below
-            #- ./license/xpauth.xpr:/opt/xpressmp/bin/xpauth.xpr
         environment:
             MINICONDA_ENV: ${MINICONDA_ENV}
         healthcheck:

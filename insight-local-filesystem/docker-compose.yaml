@@ -39,8 +39,6 @@ services:
             - public-certificates:/worker/public-certificates
             # Where to store the worker logs. Uncomment the line below if needing to save the logs to files
             #- ./logs:/worker/logs
-            # To license Xpress, put the license in the /license directory and uncomment the line below
-            #- ./license/xpauth.xpr:/opt/xpressmp/bin/xpauth.xpr
         healthcheck:
             test: curl http://worker:8080/rest/alive || exit 1
 
