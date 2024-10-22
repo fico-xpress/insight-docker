@@ -57,6 +57,22 @@ the configurations, depending on what type of persistence you want to use.
    Log in as _admin_ with password _admin123_.
 4. Ctrl+C in your terminal to shut down.
 
+## Insight with Miniconda
+An example of how to set up Insight with Miniconda is provided at `insight-local-conda-filesystem` and `insight-local-conda-mysql`.
+This configuration runs Insight with either [filesystem persistence](#insight-with-file-system-persistence) or [mysql persistence](#insight-with-mysql-persistence)
+and also install Miniconda.
+
+The `worker-conda.Dockerfile` downloads and installs Miniconda to `/opt/miniconda`.
+The provided `conda-entrypoint.sh` script installs or updates the provided `environment.yml` file each time
+the container is restarted.
+
+### Customizing the environment
+You can find an example Conda environment configuration file at `insight-local-conda-<store type>/environments/environment.yml`.
+When you make changes to this file, remember to restart the `insight-local-conda-<store type>-worker-1` docker container.
+After restarting, the container updates the miniconda environment to match your configuration.
+
+> **_NOTE:_** If you change the name of the environment in this file, make sure to also change the environment variable `MINICONDA_ENV` within `docker-compose.yaml`.
+
 ## How to change to a different port
 By default, Insight is served at http://localhost:8080.
 If another process is using that port on the host already, the server might fail to come up. You can change the value of 
@@ -122,17 +138,6 @@ update the `server.build` and `worker.build` sections in the `docker-compose.yam
 `image: ${IMAGE_SERVER}` and `image: ${IMAGE_WORKER}` respectively. This will pull the original image 
 directly from Docker Hub and skip the local step that re-builds the images with security updates.
 
-## How to license Xpress
-To license Xpress on the worker, edit the `docker-compose.yaml` file and uncomment the line in the `worker.volumes` 
-section that looks like this:
-
-```
-- ./license/xpauth.xpr:/opt/xpressmp/bin/xpauth.xpr
-```
-
-Create a directory called `license` in your `insight-local-<PERSISTENCE>` directory and put your license file 
-`xpauth.xpr` there. Restart the containers with Ctrl+C and `docker compose up`.
-
 ## Insight with file system persistence
 The data is stored in the `insight-local-filesystem_data` volume, which is created when the software starts up 
 for the first time. It is possible to back up this volume using Docker, but this should only be done when Insight is 
@@ -160,19 +165,3 @@ changing these passwords. Edit each of the files and set the desired passwords a
 2. Run the terminal command `docker rm insight-local-mysql-db-1` to delete the database pod.
 3. Run the terminal command `docker volume rm insight-local-mysql_db_data` to delete the database volume.
 4. Bring the services back up again with `docker compose up`.
-
-## Insight with Miniconda
-An example of how to set up Insight with Miniconda is provided at `insight-local-conda-filesystem` and `insight-local-conda-mysql`.
-This configuration runs Insight with either [filesystem persistence](#insight-with-file-system-persistence) or [mysql persistence](#insight-with-mysql-persistence)
-and also install Miniconda. 
-
-The `worker-conda.Dockerfile` downloads and installs Miniconda to `/opt/miniconda`. 
-The provided `conda-entrypoint.sh` script installs or updates the provided `environment.yml` file each time 
-the container is restarted. 
-
-### Customizing the environment
-You can find an example Conda environment configuration file at `insight-local-conda-<store type>/environments/environment.yml`. 
-When you make changes to this file, remember to restart the `insight-local-conda-<store type>-worker-1` docker container.
-After restarting, the container updates the miniconda environment to match your configuration.
-
-> **_NOTE:_** If you change the name of the environment in this file, make sure to also change the environment variable `MINICONDA_ENV` within `docker-compose.yaml`.
