@@ -2,10 +2,11 @@ name: example-environment
 channels:
   - fico-xpress
   - conda-forge
-  # Add intel channel
+  # Add intel channel, needed for some dependencies
   - https://software.repos.intel.com/python/conda/
 dependencies:
   - python~=3.12
-  - xpressinsight~=1.10.0
-  - xpress~=9.4.1
+  - xpressinsight=1.13.0
+  - xpress=9.5.3
   - debugpy~=1.8
+  - polars-lts-cpu # needed for Python models that use Polars

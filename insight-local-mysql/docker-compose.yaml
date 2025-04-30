@@ -48,7 +48,7 @@ services:
     db:
         # Versions are specified in the .env file
         image: mysql:${VERSION_MYSQL}
-        command: 
+        command:
             # mysql default authentication is caching_sha256_password, but the mariadb client doesn't like that.
             - --authentication_policy=mysql_native_password
             # mysql logs a warning on every connection that mysql_native_password is deprecated, though. Suppress that.
@@ -72,13 +72,36 @@ services:
             start_period: 15s
             retries: 20
 
+    workbench:
+        build:
+            dockerfile: ../workbench.Dockerfile
+            no_cache: true
+            args:
+              IMAGE_WORKBENCH:  ${IMAGE_WORKBENCH}${INSIGHT_VERSION:+:${INSIGHT_VERSION}}
+
+        platform: linux/amd64
+        ports:
+                - "127.0.0.1:${WORKBENCH_EXTERNAL_PORT}:8080"
+        volumes:
+            # where to store the user data (default to the internal docker volume)
+            - ${WORKBENCH_DATA_VOLUME:-workbench-data}:/workbench-data
+
+            # where to store the insight servers credentials
+            - workbench-server-credentials:/workbench-server-credentials
+
+            # where to store the logs
+            - workbench-logs:/workbench-logs
+
 secrets:
     db_root_password:
         file: db_root_password.txt
     db_password:
         file: db_password.txt
-     
+
 volumes:
     db_data:
     public-certificates:
-    
+    workbench-data:
+    workbench-server-credentials:
+    workbench-logs:
+

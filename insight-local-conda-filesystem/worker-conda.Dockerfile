@@ -4,6 +4,11 @@ FROM ${IMAGE_WORKER}
 USER root
 SHELL ["/bin/bash", "-c"]
 
+RUN echo "Running security updates on insight-worker" \
+    && yum -y --setopt=timeout=30 --security update \
+    && yum clean all \
+    && rm -rf /var/cache/yum
+
 # Installers and checksums can be found here: https://docs.anaconda.com/miniconda/miniconda-other-installer-links/
 ARG MINICONDA_VERSION="py312_24.4.0-0"
 ARG MINICONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh"
@@ -26,10 +31,11 @@ RUN echo "Installing miniconda" \
 
 USER worker
 WORKDIR /worker
+ENV CONDA_ROOT_PREFIX=/home/worker/.conda
 
 # Copy environments
 COPY --chown=worker:worker --chmod=755 conda-entrypoint.sh .
-COPY --chown=worker:worker environments/environment.yml ./environments/
+COPY --chown=worker:worker environments/* ./environments/
 VOLUME /worker/environments/
 
 ENTRYPOINT [ "tini", "--", "./conda-entrypoint.sh" ]
