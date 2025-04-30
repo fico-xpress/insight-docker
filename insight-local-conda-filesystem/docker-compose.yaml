@@ -48,6 +48,29 @@ services:
         healthcheck:
             test: curl http://worker:8080/rest/alive || exit 1
 
+    workbench:
+        build:
+            dockerfile: ../workbench-conda.Dockerfile
+            no_cache: true
+            args:
+              IMAGE_WORKBENCH:  ${IMAGE_WORKBENCH}${INSIGHT_VERSION:+:${INSIGHT_VERSION}}
+
+        platform: linux/amd64
+        ports:
+                - "127.0.0.1:${WORKBENCH_EXTERNAL_PORT}:8080"
+        volumes:
+            # where to store the user data (default to the internal docker volume)
+            - ${WORKBENCH_DATA_VOLUME:-workbench-data}:/workbench-data
+
+            # where to store the insight servers credentials
+            - workbench-server-credentials:/workbench-server-credentials
+
+            # where to store the logs
+            - workbench-logs:/workbench-logs
+
 volumes:
     data:
     public-certificates:
+    workbench-data:
+    workbench-server-credentials:
+    workbench-logs:
