@@ -6,7 +6,7 @@ channels:
   - https://software.repos.intel.com/python/conda/
 dependencies:
   - python~=3.12
-  - xpressinsight=1.13.0
-  - xpress=9.5.3
+  - xpressinsight=1.14.0
+  - xpress=9.6.0
   - debugpy~=1.8
   - polars-lts-cpu # needed for Python models that use Polars
