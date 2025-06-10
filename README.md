@@ -5,10 +5,6 @@ interface designed for the business user, work with models in business terms, an
 sensitivities implicit in the business problem. They can share results with their peers and collaborate to make 
 optimized decisions by running what-if scenario analysis and comparing the impact of different strategies.
 
-This edition of Xpress Insight also bundles FICO® Xpress Workbench, an IDE used for developing Mosel and Python
-optimization models prior to their being published to Xpress Insight. These can be debugged inside Workbench itself
-or remotely as an Xpress Insight scenario.
-
 # Licensing
 This image includes FICO® Xpress software, which is subject to the [Xpress Shrinkwrap License Agreement](https://community.fico.com/s/contentdocument/06980000002h0i5AAA). By downloading 
 this image, you agree to the Community License terms of the [Xpress Shrinkwrap License Agreement](https://community.fico.com/s/contentdocument/06980000002h0i5AAA) with respect to the 
@@ -53,17 +49,13 @@ point. If you have not installed it as a service, then you may need to start Doc
 the configurations, depending on what type of persistence you want to use.
 
 ## How to run
-1. Open a terminal, navigate to the appropriate `insight-local-` directory, and run the command `docker compose up`
-    - This will launch all the services provided: `server` and `worker` for Xpress Insight, and `workbench` for Xpress Workbench.
-    - To only launch a specific set of services, append their names to the command e.g. `docker compose up server worker`
-      to launch only the services for Xpress Insight.
+1. Open a terminal, navigate to the `insight-local-<PERSISTENCE>` directory, and run the command `docker compose up`
 2. The interspersed logs from Insight Server and Insight Worker will be output to your terminal.
    They can be more easily viewed in Docker Desktop.
    (In _Containers_, find _server-1_ or _worker-1_, and click.)
 3. Browse to http://localhost:8080 to use Insight.
    Log in as _admin_ with password _admin123_.
-4. For Xpress Workbench, browse to http://localhost:9595
-5. Ctrl+C in your terminal to shut down.
+4. Ctrl+C in your terminal to shut down.
 
 ## Insight with Miniconda
 An example of how to set up Insight with Miniconda is provided at `insight-local-conda-filesystem` and `insight-local-conda-mysql`.
@@ -74,53 +66,12 @@ The `worker-conda.Dockerfile` downloads and installs Miniconda to `/opt/minicond
 The provided `conda-entrypoint.sh` script installs or updates the provided `environment.yml` file each time
 the container is restarted.
 
-### Customizing the default Conda environment (Insight Worker)
+### Customizing the environment
 You can find an example Conda environment configuration file at `insight-local-conda-<store type>/environments/environment.yml`.
 When you make changes to this file, remember to restart the `insight-local-conda-<store type>-worker-1` docker container.
 After restarting, the container updates the miniconda environment to match your configuration.
 
 > **_NOTE:_** If you change the name of the environment in this file, make sure to also change the environment variable `MINICONDA_ENV` within `docker-compose.yaml`.
-
-### Using extra Conda environments (Insight Worker)
-In addition to the default Conda environment, you can specify a separate set of dependencies. This can be
-used when different apps would require differing versions of dependencies, e.g. differing versions of Python,
-that could not be reconciled in a single environment.
-
-- Users create environment.yml files either in the environments directory or in an immediate subfolder
-- the .yml files _must_ have a name property, and all the names _must_ be distinct
-- Set default environment name as the value on MINICONDA_ENV in the .env file
-- For each Conda environment, there should be a corresponding Execution Environment defined in the Admin Insight UI
-   - the names of the two do not have to be identical, there is a mapping stage to link the types of names together later
-- In the worker override.properties, for the desired default Conda environment (i.e. that used if exec env is not specified), add the following:
-  add `insight.worker.execution.environment.`_NAME_`=`_value_ for any extra required properties
-   - PYTHON_EXE, JAVA_HOME, and R_HOME will already be set in startup script if they are valid for the environment
-- Users should be mindful of environment variables set here that will not be valid for other Conda environments,
-  those should be overridden or erased (by setting to an empty string) in the custom environment setup below
-- For each of the non-default custom environments, update at  least the following in the override.properties file
-   - `insight.worker.execution.custom-environment.`_MY_EXEC_ENV_`.MINICONDA_ENV=`_my-env-name_
-   - `insight.worker.execution.custom-environment.`_MY_EXEC_ENV_`.PATH=${MINICONDA_ROOT_PREFIX}/envs/`_my-env-name_`/bin:${PATH}`
-- If this is environment uses Python, add
-   - `insight.worker.execution.custom-environment.`_MY_EXEC_ENV_`.PYTHON_EXE=${MINICONDA_ROOT_PREFIX}/envs/`_my-env-name_`/bin/python`
-- If this is environment uses Java, add
-   - `insight.worker.execution.custom-environment.`_MY_EXEC_ENV_`.JAVA_HOME=${MINICONDA_ROOT_PREFIX}/envs/`_my-env-name_`/lib/java`
-- If this is environment uses R, add
-   - `insight.worker.execution.custom-environment.`_MY_EXEC_ENV_`.R_HOME=${MINICONDA_ROOT_PREFIX}/envs/`_my-env-name_`/lib/R`
-- ...and so on for any other requirements the environment has
-
-(As mentioned above, anything set in the default environment that doesn't fit here should be overridden.)
-
-Note that the _MY_EXEC_ENV_ chosen for the custom-environment is the one used in the Admin UI, and the _value_ set to its
-MINICONDA_ENV variable is the Conda environment name as defined in the environment.yml file. (There is no need for these names to match,
-though a good practice is to make them similar but corresponding to the casing conventions of each context)
-
-### Using Conda environment (Xpress Workench)
-Xpress Workbench maintains an environment.yml per app, as it does on the FICO Platform in the cloud. This differs from the Insight Worker,
-which maintains a pool  of Conda environment.yml file that can span multiple apps (see above). A good starting point with a new Workbench project is to
-copy the appropriate .yml from the Insight Worker into the Workbench project's model_resources folder. It is up to the user to keep
-the versions in Workbench and Insight in sync. The intention is that while developing locally, a user will add/adjust Conda dependencies
-in Workbench, and then when ready to publish to Insight, will copy the .yml back (necessitating a Worker restart) if any dependencies
-have changed.
-
 
 ## How to change to a different port
 By default, Insight is served at http://localhost:8080.
@@ -214,11 +165,3 @@ changing these passwords. Edit each of the files and set the desired passwords a
 2. Run the terminal command `docker rm insight-local-mysql-db-1` to delete the database pod.
 3. Run the terminal command `docker volume rm insight-local-mysql_db_data` to delete the database volume.
 4. Bring the services back up again with `docker compose up`.
-
-### Publishing from Docker-based Xpress Workbench to Xpress Insight
-When connecting to Insight from Workbench, there is an option to save the API Credentials from Insight. This
-replaces the use of Credentials Manager (Windows) and Keychain (macOS) on desktop Workbench.
-
-When doing a Full Publish to Insight, there is an option in the publish dialog, along with the existing app to
-publish to (if any), to optionally choose an execution environment. This is the same as setting the execution
-environment name on the app in the Insight Admin UI.
