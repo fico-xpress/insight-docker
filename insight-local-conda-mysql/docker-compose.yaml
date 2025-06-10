@@ -97,6 +97,11 @@ services:
 
             # where to store the logs
             - workbench-logs:/workbench-logs
+        environment:
+            - SERVER_EXTERNAL_PORT=${SERVER_EXTERNAL_PORT}
+            - WORKBENCH_LOGGING=${WORKBENCH_LOGGING:-}
+            - MOSEL_RUNNER_LOGGING=${MOSEL_RUNNER_LOGGING:-}
+            - GRPC_TRACE=${GRPC_TRACE:-}
 
 secrets:
     db_root_password:
