@@ -7,10 +7,13 @@ services:
             args:
               IMAGE_SERVER: ${IMAGE_SERVER}${INSIGHT_VERSION:+:${INSIGHT_VERSION}}
         ports:
-            # SERVER_EXTERNAL_PORT is defined in the .env file (default 8080)
-            - "${SERVER_EXTERNAL_PORT}:8080"
+            # SERVER_PORT is defined in the .env file (default 8080)
+            - "${SERVER_PORT}:${SERVER_PORT}"
         environment:
-            - SERVER_EXTERNAL_PORT=${SERVER_EXTERNAL_PORT}
+            - SERVER_HOSTNAME=${SERVER_HOSTNAME}
+            - SERVER_PORT=${SERVER_PORT}
+            - ENABLE_SSL=${ENABLE_SSL}
+            - SERVER_PROTOCOL=${SERVER_PROTOCOL}
         volumes:
             # server-config mounted onto server/config in the container
             - ./server-config:/server/config
@@ -18,10 +21,15 @@ services:
             - data:/data
             # When it starts, the server generates a public certificate visible to the worker
             - public-certificates:/server/public-certificates
-            # Where to store the server logs. Uncomment the line below if needing to save the logs to files
-            #- ./logs:/server/logs
+            # Where to store the server logs.
+            - ./logs:/server/logs
+        secrets:
+            - ssl_keystore_password
         healthcheck:
-            test: curl http://server:8080/insightservices/rest/ready || exit 1
+            test: curl --insecure -f ${SERVER_PROTOCOL:-http}://localhost:${SERVER_PORT}/insightservices/rest/ready || exit 1
+            retries: 10
+            interval: 15s
+            timeout: 10s
     worker:
         depends_on:
             server:
@@ -32,16 +40,26 @@ services:
             no_cache: true
             args:
               IMAGE_WORKER: ${IMAGE_WORKER}${INSIGHT_VERSION:+:${INSIGHT_VERSION}}
+        environment:
+            - SERVER_PORT=${SERVER_PORT}
+            - ENABLE_SSL=${ENABLE_SSL}
+            - SERVER_PROTOCOL=${SERVER_PROTOCOL}
         volumes:
             # worker-config mounted onto worker/config in the container
             - ./worker-config:/worker/config
             # Add the server's public certificate
             - public-certificates:/worker/public-certificates
             # Where to store the worker logs. Uncomment the line below if needing to save the logs to files
-            #- ./logs:/worker/logs
+            - ./logs:/worker/logs
+            # to override the license
+            - ./xpress-license:/xpress-license
+        secrets:
+            - ssl_keystore_password
         healthcheck:
-            test: curl http://worker:8080/rest/alive || exit 1
-
+            test: curl --insecure -f ${SERVER_PROTOCOL:-http}://localhost:${SERVER_PORT}/worker/rest/alive || exit 1
+            retries: 10
+            interval: 15s
+            timeout: 10s
     workbench:
         build:
             dockerfile: ../workbench.Dockerfile
@@ -56,17 +74,33 @@ services:
             # where to store the user data (default to the internal docker volume)
             - ${WORKBENCH_DATA_VOLUME:-workbench-data}:/workbench-data
 
+            # configuration for Workbench
+            - ./workbench-config:/workbench-config
+
             # where to store the insight servers credentials
             - workbench-server-credentials:/workbench-server-credentials
 
             # where to store the logs
             - workbench-logs:/workbench-logs
+
+            # So Workbench can trust self-signed certificates for server
+            - public-certificates:/public-certificates
+
+            # to override the license
+            - ./xpress-license:/xp-license
+
         environment:
-            - SERVER_EXTERNAL_PORT=${SERVER_EXTERNAL_PORT}
+            - SERVER_PORT=${SERVER_PORT}
+            - ENABLE_SSL=${ENABLE_SSL}
             - WORKBENCH_LOGGING=${WORKBENCH_LOGGING:-}
             - MOSEL_RUNNER_LOGGING=${MOSEL_RUNNER_LOGGING:-}
             - GRPC_TRACE=${GRPC_TRACE:-}
+            - GRPC_VERBOSITY=${GRPC_VERBOSITY:-}
+            - WORKBENCH_EXTRA_CA_CERT_FILES=${WORKBENCH_EXTRA_CA_CERT_FILES:-}
 
+secrets:
+    ssl_keystore_password:
+        file: ssl_keystore_password.txt
 volumes:
     data:
     public-certificates:
