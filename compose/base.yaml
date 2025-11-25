@@ -83,7 +83,7 @@ services:
             dockerfile: dockerfile/workbench.Dockerfile
             no_cache: true
             args:
-                IMAGE_WORKBENCH: ${IMAGE_WORKBENCH}${INSIGHT_VERSION:+:${INSIGHT_VERSION}}
+                IMAGE_WORKBENCH: ${IMAGE_WORKBENCH}${WORKBENCH_VERSION:+:${WORKBENCH_VERSION}}
         ports:
             - "127.0.0.1:${WORKBENCH_EXTERNAL_PORT}:8080"
         volumes:
