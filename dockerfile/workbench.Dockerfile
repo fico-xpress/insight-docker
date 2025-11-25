@@ -8,11 +8,10 @@ USER root
 
 # Make this explicit on startup to avoid pemissions race condition
 # with server on macOS.
-RUN mkdir -p /public-certificates
-RUN chown -R ${XPRESS_USER_ID}:${XPRESS_GROUP_ID} /public-certificates
-RUN chmod -R o+r /public-certificates
-
-RUN echo "Running security updates on workbench" \
+RUN mkdir -p /public-certificates \
+    && chown -R ${XPRESS_USER_ID}:${XPRESS_GROUP_ID} /public-certificates \
+    && chmod -R o+r /public-certificates \
+    && echo "Running security updates on workbench" \
     && yum -y --setopt=timeout=30 --security update \
     && yum clean all \
     && rm -rf /var/cache/yum
