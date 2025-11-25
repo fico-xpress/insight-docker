@@ -1,0 +1,6 @@
+name: insight-mysql-mirror
+include:
+  - path:
+      - compose/base.yaml
+      - compose/mysql.yaml
+      - compose/mirror.yaml

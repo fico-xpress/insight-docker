@@ -1,0 +1,7 @@
+name: insight-conda-mysql-mirror
+include:
+  - path:
+      - compose/base.yaml
+      - compose/conda.yaml
+      - compose/mysql.yaml
+      - compose/mirror.yaml

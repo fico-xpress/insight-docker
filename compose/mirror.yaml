@@ -1,0 +1,49 @@
+services:
+  server:
+    depends_on:
+      mirror-db:
+        condition: service_healthy
+    secrets:
+      - mirror_db_password
+      - mirror_db_root_password
+    volumes:
+        - ./config/server/mirror.properties:/server/config-optional/mirror.properties
+  mirror-db:
+#    # Starting both DBs in parallel causes intermittent issues connecting from the host - start them one at a time
+#    # to ensure this never happens.
+#    depends_on:
+#      db:
+#        condition: service_healthy
+    # Versions are specified in the .env file
+    image: mysql:${VERSION_MYSQL}
+    command:
+      # mysql default authentication is caching_sha256_password, but the mariadb client doesn't like that.
+      - --authentication_policy=mysql_native_password
+      # mysql logs a warning on every connection that mysql_native_password is deprecated, though. Suppress that.
+      - --log-error-verbosity=1
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mirror_db_root_password
+      MYSQL_USER: insight
+      MYSQL_PASSWORD_FILE: /run/secrets/mirror_db_password
+      MYSQL_DATABASE: mirror_master
+    volumes:
+      - ./sql/mirror-db-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "${MIRROR_PORT:-3306}:3306"
+    secrets:
+      - mirror_db_root_password
+      - mirror_db_password
+    healthcheck:
+      test: "/usr/bin/mysql 
+                --user=insight 
+                --password=$$(cat /run/secrets/mirror_db_password) 
+                --execute \"USE mirror_master;\""
+      interval: 5s
+      start_period: 15s
+      retries: 20
+
+secrets:
+  mirror_db_root_password:
+    file: ../secrets/mirror_db_root_password.txt
+  mirror_db_password:
+    file: ../secrets/mirror_db_password.txt

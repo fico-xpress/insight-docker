@@ -1,0 +1,7 @@
+name: insight-mysql-tableau
+include:
+  - path:
+      - compose/base.yaml
+      - compose/mysql.yaml
+      - compose/mirror.yaml
+      - compose/tableau.yaml

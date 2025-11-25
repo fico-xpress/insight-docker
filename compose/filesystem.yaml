@@ -1,0 +1,9 @@
+services:
+    server:
+        volumes:
+            # You can see the repo and silo are in the volume 'insight-filesystem_data'
+            - data:/data
+            - ./config/server/filesystem.properties:/server/config-optional/filesystem.properties
+
+volumes:
+    data:
