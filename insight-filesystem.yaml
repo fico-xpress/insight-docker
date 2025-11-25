@@ -1,0 +1,5 @@
+name: insight-filesystem
+include:
+    - path:
+        - compose/base.yaml
+        - compose/filesystem.yaml

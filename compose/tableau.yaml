@@ -1,0 +1,15 @@
+services:
+  server:
+    environment:
+      - TABLEAU_URL=${TABLEAU_URL}
+      - TABLEAU_USER=${TABLEAU_USER}
+      - TABLEAU_SITE_ID=${TABLEAU_SITE_ID}
+      - MIRROR_HOST=${MIRROR_HOST}
+      - MIRROR_PORT=${MIRROR_PORT:-3306}
+    secrets:
+      - tableau_password
+    volumes:
+        - ./config/server/tableau.properties:/server/config-optional/tableau.properties
+secrets:
+  tableau_password:
+    file: ../secrets/tableau_password.txt

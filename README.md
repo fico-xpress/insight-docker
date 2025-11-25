@@ -14,7 +14,7 @@ You can find documentation on how to use Xpress Insight and Xpress Workbench at 
 # License
 
 The Docker images include FICO® Xpress software, which is subject to
-the [Xpress Shrinkwrap License Agreement](https://community.fico.com/s/contentdocument/06980000002h0i5AAA).
+the [Xpress Shrinkwrap License Agreement](https://www.fico.com/en/shrinkwrap-license-agreement-fico-xpress-optimization-suite-on-premises).
 By downloading this image, you agree to the Community License terms of the Xpress Shrinkwrap License Agreement with
 respect to the included FICO Xpress software. See the
 [licensing options overview ](https://community.fico.com/s/fico-xpress-optimization-licensing-optio)

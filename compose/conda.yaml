@@ -1,0 +1,20 @@
+services:
+    server:
+        ports:
+            # SERVER_EXTERNAL_PYTHON_DEBUG_PORT is defined in the .env file (default 8090)
+            - "${SERVER_EXTERNAL_PYTHON_DEBUG_PORT}:${SERVER_EXTERNAL_PYTHON_DEBUG_PORT}"
+        environment:
+            - SERVER_EXTERNAL_PYTHON_DEBUG_PORT=${SERVER_EXTERNAL_PYTHON_DEBUG_PORT}
+
+    worker:
+        build:
+            dockerfile: dockerfile/worker-conda.Dockerfile
+        volumes:
+            - ../environments:/worker/environments
+            - ./config/worker/conda.properties:/worker/config-optional/conda.properties
+        environment:
+            MINICONDA_ENV: ${MINICONDA_ENV}
+
+    workbench:
+        build:
+            dockerfile: dockerfile/workbench-conda.Dockerfile

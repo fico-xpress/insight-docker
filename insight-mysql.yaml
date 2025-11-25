@@ -1,0 +1,5 @@
+name: insight-mysql
+include:
+  - path:
+      - compose/base.yaml
+      - compose/mysql.yaml

@@ -1,0 +1,44 @@
+services:
+    server:
+        depends_on:
+          db:
+            condition: service_healthy
+        secrets:
+            - db_password
+        volumes:
+            - ./config/server/mysql.properties:/server/config-optional/mysql.properties
+    db:
+        # Versions are specified in the .env file
+        image: mysql:${VERSION_MYSQL}
+        command:
+            # mysql default authentication is caching_sha256_password, but the mariadb client doesn't like that.
+            - --authentication_policy=mysql_native_password
+            # mysql logs a warning on every connection that mysql_native_password is deprecated, though. Suppress that.
+            - --log-error-verbosity=1
+        volumes:
+            - db_data:/var/lib/mysql
+        environment:
+            MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+            MYSQL_USER: insight
+            MYSQL_PASSWORD_FILE: /run/secrets/db_password
+            MYSQL_DATABASE: insight
+        secrets:
+            - db_root_password
+            - db_password
+        healthcheck:
+            test: "/usr/bin/mysql 
+                      --user=insight 
+                      --password=$$(cat /run/secrets/db_password) 
+                      --execute \"USE insight;\""
+            interval: 5s
+            start_period: 15s
+            retries: 20
+
+secrets:
+    db_root_password:
+        file: ../secrets/db_root_password.txt
+    db_password:
+        file: ../secrets/db_password.txt
+
+volumes:
+    db_data:
