@@ -8,7 +8,7 @@ FICO Xpress Workbench is an IDE used for developing Mosel and Python optimizatio
 # Documentation
 
 For documentation on how to configure and deploy these images, see the
-[Xpress Optimization Docker Deployment Guide.](https://www.fico.com/fico-xpress-optimization/docs/latest/dockerGuide/GUID-12B8C111-A287-34DD-B0CF-57E1263B24DB.html)
+[Xpress Optimization Docker Deployment Guide.](https://www.fico.com/fico-xpress-optimization/docs/latest/dockerGuide)
 You can find documentation on how to use Xpress Insight and Xpress Workbench at the same location.
 
 # License

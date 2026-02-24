@@ -1,6 +1,6 @@
 services:
     init:
-      image: docker.io/amazoncorretto:17-al2023
+      image: docker.io/amazoncorretto:17-alpine
       environment:
         - ENABLE_SSL=${ENABLE_SSL}
       volumes:
