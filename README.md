@@ -1,3 +1,10 @@
+# Xpress Insight Server and Worker will cease to be deployed via Docker Compose from the 21st of December
+
+The existing images on Docker Hub for Xpress Insight will be removed after this date, no new versions will be deployed with immediate effect. 
+Xpress Workbench will continue to be deployable via this method past that date.
+
+# Introduction
+
 This repository contains configuration files you can use to deploy FICO® Xpress Insight and FICO® Xpress Workbench as
 Docker images, enabling a seamless deployment across all platforms.
 
