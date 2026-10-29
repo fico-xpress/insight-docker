@@ -1,0 +1,5 @@
+name: workbench-conda
+include:
+    - path:
+        - compose/workbench.yaml
+        - compose/workbench-conda.yaml
