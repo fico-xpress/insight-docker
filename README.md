@@ -1,22 +1,50 @@
 # Xpress Insight Server and Worker will cease to be deployed via Docker Compose from the 21st of December
 
-The existing images on Docker Hub for Xpress Insight will be removed after this date, no new versions will be deployed with immediate effect. 
-Xpress Workbench will continue to be deployable via this method past that date.
+The existing images on Docker Hub for Xpress Insight will be removed after this date, no new versions will be deployed with immediate effect.
+Xpress Workbench will continue to be deployable via this method past this date.
 
 # Introduction
 
-This repository contains configuration files you can use to deploy FICO® Xpress Insight and FICO® Xpress Workbench as
-Docker images, enabling a seamless deployment across all platforms.
+This repository contains configuration files you can use to deploy FICO® Xpress Workbench as a Docker image,
+enabling a seamless deployment across all platforms.
 
-FICO Xpress Insight makes it easy to create, deploy, and utilize business optimization solutions with scalable
-high-performance algorithms, a flexible modeling environment, and rapid application development and reporting capabilities.
-FICO Xpress Workbench is an IDE used for developing Mosel and Python optimization models prior to their being published to Xpress Insight.
+FICO Xpress Workbench is an IDE used for developing Mosel and Python optimization models prior to their being
+published to FICO® Xpress Insight.
+
+# Getting started
+
+```
+docker compose -f workbench.yaml up --build
+```
+
+Xpress Workbench is then available on `http://localhost:9595`. Change `WORKBENCH_EXTERNAL_PORT` in `.env` to
+use a different port, and set `WORKBENCH_DATA_VOLUME` to a path on your host system if you would rather your
+projects were stored outside the container.
+
+To develop Python models in a Conda environment, use the Conda variant instead:
+
+```
+docker compose -f workbench-conda.yaml up --build
+```
+
+## Connecting to Xpress Insight
+
+The Xpress Insight server you publish your models to is configured from within the Xpress Workbench user
+interface, not in this repository. Workbench connects to an existing Insight server; it does not deploy one.
+
+If that server presents a certificate that is not signed by a public authority, place the `.pem` file for its
+certificate chain in `workbench-config` as described in `workbench-config/README.md`, so that Workbench
+trusts it.
+
+## Using an Xpress Solver license
+
+See `xpress-license/README.md`.
 
 # Documentation
 
-For documentation on how to configure and deploy these images, see the
+For documentation on how to configure and deploy this image, see the
 [Xpress Optimization Docker Deployment Guide.](https://www.fico.com/fico-xpress-optimization/docs/latest/dockerGuide)
-You can find documentation on how to use Xpress Insight and Xpress Workbench at the same location.
+You can find documentation on how to use Xpress Workbench at the same location.
 
 # License
 

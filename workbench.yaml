@@ -1,0 +1,4 @@
+name: workbench
+include:
+    - path:
+        - compose/workbench.yaml

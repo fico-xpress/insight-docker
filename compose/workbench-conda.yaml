@@ -1,0 +1,4 @@
+services:
+    workbench:
+        build:
+            dockerfile: dockerfile/workbench-conda.Dockerfile

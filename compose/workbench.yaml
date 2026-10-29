@@ -1,0 +1,47 @@
+services:
+    workbench:
+        build:
+            context: ..
+            dockerfile: dockerfile/workbench.Dockerfile
+            no_cache: true
+            args:
+                IMAGE_WORKBENCH: ${IMAGE_WORKBENCH}${WORKBENCH_VERSION:+:${WORKBENCH_VERSION}}
+        ports:
+            - "127.0.0.1:${WORKBENCH_EXTERNAL_PORT}:8080"
+        volumes:
+            # where to store the user data (default to the internal docker volume)
+            - ${WORKBENCH_DATA_VOLUME:-workbench-data}:/workbench-data
+
+            # configuration for Workbench
+            - ../workbench-config:/workbench-config
+
+            # where to store the insight servers credentials
+            - workbench-server-credentials:/workbench-server-credentials
+
+            # where to store the logs
+            - workbench-logs:/workbench-logs
+
+            # So Workbench can trust self-signed certificates from server
+            - public-certificates:/public-certificates
+
+            # to override the license
+            - ../xpress-license:/xp-license
+
+        environment:
+            # These describe the Insight server Workbench talks to, not Workbench's own endpoint, which
+            # is always plain HTTP on container port 8080. Defaulted so that Workbench can be deployed
+            # on its own, without the Insight server, using compose/workbench.yaml alone.
+            - SERVER_PORT=${SERVER_PORT:-8080}
+            - ENABLE_SSL=${ENABLE_SSL:-false}
+            - WORKBENCH_LOGGING=${WORKBENCH_LOGGING:-}
+            - MOSEL_RUNNER_LOGGING=${MOSEL_RUNNER_LOGGING:-}
+            - GRPC_TRACE=${GRPC_TRACE:-}
+            - GRPC_VERBOSITY=${GRPC_VERBOSITY:-}
+            - WORKBENCH_EXTRA_CA_CERT_FILES=${WORKBENCH_EXTRA_CA_CERT_FILES:-}
+
+volumes:
+    # Also declared in compose/base.yaml, which the standalone Workbench deployment does not include.
+    public-certificates:
+    workbench-data:
+    workbench-server-credentials:
+    workbench-logs:
