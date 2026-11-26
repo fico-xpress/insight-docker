@@ -1,3 +1,5 @@
+# Docker images related to the Xpress Insight worker and server have now been removed, these can no longer be deployed using any version of the compose config. The removal date was brought forward due to the discovery of the Java4Shell (CVE-2026-114938) vulnerability.
+
 # Xpress Insight Server and Worker will cease to be deployed via Docker Compose from the 21st of December
 
 The existing images on Docker Hub for Xpress Insight will be removed after this date, no new versions will be deployed with immediate effect.
